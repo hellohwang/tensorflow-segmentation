@@ -18,7 +18,7 @@ CLOTHES_DATASET_PATH = '/data3/hwang/proj/tensorflow-segmentation/datasets/data'
 class ClothesSegmentation(BaseDataset):
     BASE_DIR = 'clothes_segmentation'
     NUM_CLASS = 12
-    LEN_DATASET = 0
+    LEN_TRAINSET = 894
 
     def __init__(self, root=os.path.expanduser(CLOTHES_DATASET_PATH), split='train',
                  mode=None, transform=True, **kwargs):
@@ -29,14 +29,11 @@ class ClothesSegmentation(BaseDataset):
         # assert os.path.exists(root), "Please setup the dataset using" + \
         #   "encoding/scripts/clothes.py"
         self.len_dataset = 0
-        self.images, self.masks = self._get_clothes_pairs(root, split)
-        print('length of images, mask', len(self.images), len(self.masks))
-        # self.image_label_path_generator = self._get_clothes_pairs(root, split)
-        if split != 'test':
-           assert (len(self.images) == len(self.masks))
-        if len(self.images) == 0:
-            raise (RuntimeError("Found 0 images in subfolders of: \
-                    " + root + "\n"))
+        # self.image_label_paths = self._get_clothes_pairs(root, split)
+        self.image_label_path_generator = self._get_clothes_pairs(root, split)
+        # if sum(1 for _ in self.image_label_path_generator) == 0:
+        #     raise (RuntimeError("Found 0 images in subfolders of: \
+        #             " + root + "\n"))
 
     def _mask_transform(self, mask):
         target = np.array(mask).astype('int32')
@@ -81,12 +78,9 @@ class ClothesSegmentation(BaseDataset):
 
         return img, mask
 
-    @classmethod
-    def _get_clothes_pairs(cls, folder, split='train'):
+    def _get_clothes_pairs(self, folder, split='train'):
         def get_path_pairs(folder, split_f):
-            img_paths = []
-            mask_paths = []
-            # image_label_paths = []
+            image_label_paths = []
             with open(split_f, 'r') as lines:
                 for line in tqdm(lines):
                     ll_str = re.split(' ', line)
@@ -95,17 +89,14 @@ class ClothesSegmentation(BaseDataset):
                     maskpath = os.path.join(
                         folder, split, 'masks', ll_str[1].rstrip())
                     if os.path.isfile(maskpath) and os.path.isfile(imgpath):
-                        img_paths.append(imgpath)
-                        mask_paths.append(maskpath)
-                        # image_label_paths.append((imgpath, maskpath))
+                        image_label_paths.append((imgpath, maskpath))
                     else:
                         print('cannot find the mask:', maskpath)
-            return img_paths, mask_paths
-            # cls.LEN_DATASET = len(image_label_paths)
-            # while True:
-            #     random.shuffle(image_label_paths)
-            #     for i in range(len(image_label_paths)):
-            #         yield image_label_paths[i]
+            self.len_dataset = len(image_label_paths)
+            while True:
+                random.shuffle(image_label_paths)
+                for i in range(len(image_label_paths)):
+                    yield image_label_paths[i]
 
         if split == 'train':
             split_f = os.path.join(folder, 'train.txt')
@@ -125,9 +116,9 @@ class ClothesSegmentation(BaseDataset):
         """
         generate image and mask at the same time
         """
-        image_label_paths = zip(self.images, self.masks)
-        print('zip paths:', image_label_paths)
-        image_label_path_generator = iter(image_label_paths)
+        # image_label_paths = zip(self.images, self.masks)
+        # print('zip paths:', image_label_paths)
+        # image_label_path_generator = iter(image_label_paths)
         while True:
             images = np.zeros(
                 shape=[self.batch_size, self.crop_size, self.crop_size, 3])
@@ -138,37 +129,3 @@ class ClothesSegmentation(BaseDataset):
                 image, label = self.process_image_label(image_path, label_path)
                 images[i], labels[i] = image, label
             yield images, labels
-
-
-# def _get_clothes_pairs(folder, split='train'):
-#     def get_path_pairs(folder, split_f):
-#         image_label_paths = []
-#         with open(split_f, 'r') as lines:
-#             for line in tqdm(lines):
-#                 ll_str = re.split(' ', line)
-#                 imgpath = os.path.join(
-#                     folder, split, 'imgs', ll_str[0].rstrip())
-#                 maskpath = os.path.join(
-#                     folder, split, 'masks', ll_str[1].rstrip())
-#                 if os.path.isfile(maskpath) and os.path.isfile(imgpath):
-#                     image_label_paths.append((imgpath, maskpath))
-#                 else:
-#                     print('cannot find the mask:', maskpath)
-#         while True:
-#             random.shuffle(image_label_paths)
-#             for i in range(len(image_label_paths)):
-#                 yield image_label_paths[i]
-#
-#     if split == 'train':
-#         split_f = os.path.join(folder, 'train.txt')
-#         image_label_paths = get_path_pairs(folder, split_f)
-#     elif split == 'val':
-#         split_f = os.path.join(folder, 'val.txt')
-#         image_label_paths = get_path_pairs(folder, split_f)
-#     elif split == 'test':
-#         split_f = os.path.join(folder, 'test.txt')
-#         image_label_paths = get_path_pairs(folder, split_f)
-#     else:
-#         split_f = os.path.join(folder, 'trainval_fine.txt')
-#         image_label_paths = get_path_pairs(folder, split_f)
-#     return image_label_paths

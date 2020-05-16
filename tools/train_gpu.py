@@ -1,9 +1,10 @@
 import sys
 import os
+
 this_dir = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(this_dir, '..'))
 
-from datasets import ClothesSegmentation
+from datasets import *
 
 from models.seg import *
 import argparse
@@ -95,6 +96,7 @@ class Options():
                 'pcontext': 80,
                 'ade20k': 180,
                 'citys': 240,
+                'clothes': 1800,
             }
             args.epochs = epoches[args.dataset.lower()]
         if args.lr is None:
@@ -105,17 +107,27 @@ class Options():
                 'pcontext': 0.001,
                 'ade20k': 0.004,
                 'citys': 0.004,
+                'clothes': 0.01,
             }
             args.lr = lrs[args.dataset.lower()] / 16 * args.batch_size
         print(args)
         return args
 
 
-# TrainSet = DataGenerator("./data/train_image.txt", "./data/train_labels", 2)
-# data_kwargs = {'base_size': args.base_size,'crop_size': args.crop_size}
-data_kwargs={'base_size': 512, 'crop_size': 384}
-TrainSet=ClothesSegmentation(mode='train', **data_kwargs)._DataGenerator()
-model=FCN8s(n_class=21)
+args = Options().parse()
+
+# dataset generator
+data_kwargs = {'base_size': args.base_size, 'crop_size': args.crop_size}
+trainset = get_dataset(args.dataset, split=args.train_split, mode='train', **data_kwargs)
+trainset_datagen = trainset._DataGenerator()
+valset = get_dataset(args.dataset, split=args.train_split, mode='val', **data_kwargs)
+valset_datagen = valset._DataGenerator()
+
+# model definition
+
+
+
+model = FCN8s(n_class=21)
 model.compile(optimizer=tf.keras.optimizers.Adam(lr=1e-4),
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
