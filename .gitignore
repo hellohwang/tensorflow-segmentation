@@ -1,2 +1,4 @@
+*.swp
+*.pyc
 datasets/data
 tools/models
