@@ -16,16 +16,16 @@ datasets = {
     'clothes': ClothesSegmentation,
 }
 
-acronyms = {
-    'coco': 'coco',
-    'pascal_voc': 'voc',
-    'pascal_aug': 'voc',
-    'pcontext': 'pcontext',
-    'ade20k': 'ade',
-    'citys': 'citys',
-    'minc': 'minc',
-    'cifar10': 'cifar10',
-}
+#acronyms = {
+#    'coco': 'coco',
+#    'pascal_voc': 'voc',
+#    'pascal_aug': 'voc',
+#    'pcontext': 'pcontext',
+#    'ade20k': 'ade',
+#    'citys': 'citys',
+#    'minc': 'minc',
+#    'cifar10': 'cifar10',
+#}
 
 def get_dataset(name, **kwargs):
     return datasets[name.lower()](**kwargs)

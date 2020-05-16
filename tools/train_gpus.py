@@ -18,8 +18,6 @@ from tqdm import tqdm
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import applications
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
-
 import sys
 import os
 
@@ -112,7 +110,7 @@ class Options():
 
     def parse(self):
         args = self.parser.parse_args()
-        args.cuda = not args.no_cuda and tf.cuda.is_available()
+        args.cuda = not args.no_cuda and tf.test.is_gpu_available()
         # default settings for epochs, batch_size and lr
         if args.epochs is None:
             epoches = {
@@ -122,6 +120,7 @@ class Options():
                 'pcontext': 80,
                 'ade20k': 180,
                 'citys': 240,
+                'clothes': 1800,
             }
             args.epochs = epoches[args.dataset.lower()]
         if args.lr is None:
@@ -132,6 +131,7 @@ class Options():
                 'pcontext': 0.001,
                 'ade20k': 0.004,
                 'citys': 0.004,
+                'clothes': 0.01,
             }
             args.lr = lrs[args.dataset.lower()] / 16 * args.batch_size
         print(args)
@@ -162,21 +162,21 @@ strategy = tf.distribute.MirroredStrategy()
 
 # Defining Model
 with strategy.scope():
-    # backbone = applications.mobilenet_v2.MobileNetV2(include_top=False,
-    #                                                  weights='imagenet', input_shape=(IMG_SIZE, IMG_SIZE, 3))
-    # x = tf.keras.layers.Input(shape=(IMG_SIZE, IMG_SIZE, 3))
-    # y = backbone(x)
-    # y = tf.keras.layers.AveragePooling2D()(y)
-    # y = tf.keras.layers.Flatten()(y)
-    # y = tf.keras.layers.Dense(EMB_SIZE, activation=None)(y)
-    # featureExtractor = tf.keras.models.Model(inputs=x, outputs=y)
-    # model = tf.keras.Sequential([
-    #     featureExtractor,
-    #     tf.keras.layers.Dense(NUM_CLASS, activation='softmax')
-    # ])
-    #
-    # model.build(input_shape=[1, IMG_SIZE, IMG_SIZE, 3])
-    model = FCN8s(n_class=trainset.NUM_CLASS)
+    backbone = applications.mobilenet_v2.MobileNetV2(include_top=False,
+                                                     weights='imagenet', input_shape=(args.crop_size, args.crop_size, 3))
+    x = tf.keras.layers.Input(shape=(args.crop_size, args.crop_size, 3))
+    y = backbone(x)
+    y = tf.keras.layers.AveragePooling2D()(y)
+    y = tf.keras.layers.Flatten()(y)
+    y = tf.keras.layers.Dense(2, activation=None)(y)
+    featureExtractor = tf.keras.models.Model(inputs=x, outputs=y)
+    model = tf.keras.Sequential([
+        featureExtractor,
+        tf.keras.layers.Dense(12, activation='softmax')
+    ])
+    
+    model.build(input_shape=[1, args.crop_size, args.crop_size, 3])
+    # model = FCN8s(n_class=trainset.NUM_CLASS)
     print(model)
     optimizer = tf.keras.optimizers.Adam(0.001)
 
