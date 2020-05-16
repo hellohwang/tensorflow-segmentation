@@ -1,7 +1,16 @@
-import tensorflow as tf
-from models.seg import FCN8s
+import sys
+import os
+this_dir = os.path.dirname(__file__)
+sys.path.insert(0, os.path.join(this_dir, '..'))
+
 from datasets import ClothesSegmentation
 
+from models.seg import FCN8s
+import tensorflow as tf
+
+# os.environ["TF_CPP_MIN_LOG_LEVEL"]='1' # 这是默认的显示等级，显示所有信息
+# os.environ["TF_CPP_MIN_LOG_LEVEL"]='2' # 只显示 warning 和 Error
+os.environ["TF_CPP_MIN_LOG_LEVEL"]='3' # 只显示 Error
 
 # class Options():
 #     def __init__(self):
@@ -108,12 +117,14 @@ from datasets import ClothesSegmentation
 
 # TrainSet = DataGenerator("./data/train_image.txt", "./data/train_labels", 2)
 # data_kwargs = {'base_size': args.base_size,'crop_size': args.crop_size}
-data_kwargs = {'base_size': 512, 'crop_size': 384}
-TrainSet = ClothesSegmentation(mode='train', **data_kwargs)._DataGenerator()
-model = FCN8s(n_class=21)
+data_kwargs={'base_size': 512, 'crop_size': 384}
+TrainSet=ClothesSegmentation(mode='train', **data_kwargs)._DataGenerator()
+model=FCN8s(n_class=21)
 model.compile(optimizer=tf.keras.optimizers.Adam(lr=1e-4),
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
-## train your FCN8s model
-callback = tf.keras.callbacks.ModelCheckpoint("FCN8s.h5", verbose=1, save_weights_only=True)
-model.fit_generator(TrainSet, steps_per_epoch=6000, epochs=30, callbacks=[callback])
+# train your FCN8s model
+callback=tf.keras.callbacks.ModelCheckpoint(
+    "FCN8s.h5", verbose=1, save_weights_only=True)
+model.fit_generator(TrainSet, steps_per_epoch=6000,
+                    epochs=30, callbacks=[callback])

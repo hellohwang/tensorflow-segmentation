@@ -12,7 +12,7 @@ from .base import BaseDataset
 
 __all__ = ['ClothesSegmentation']
 
-CLOTHES_DATASET_PATH = '/data3/hwang/proj/PyTorch-Encoding/datasets/'
+CLOTHES_DATASET_PATH = '/data3/hwang/proj/tensorflow-segmentation/datasets/data'
 
 
 class ClothesSegmentation(BaseDataset):
@@ -21,18 +21,19 @@ class ClothesSegmentation(BaseDataset):
 
     def __init__(self, root=os.path.expanduser(CLOTHES_DATASET_PATH), split='train',
                  mode=None, transform=True, **kwargs):
-        super(ClothesSegmentation, self).__init__(root, split, mode, transform, **kwargs)
+        super(ClothesSegmentation, self).__init__(
+            root, split, mode, transform, **kwargs)
         # assert exists and prepare dataset automatically
         root = os.path.join(root, self.BASE_DIR)
         # assert os.path.exists(root), "Please setup the dataset using" + \
         #   "encoding/scripts/clothes.py"
 
         self.image_label_path_generator = _get_clothes_pairs(root, split)
-        if split != 'test':
-            assert (len(self.images) == len(self.masks))
-        if len(self.images) == 0:
-            raise (RuntimeError("Found 0 images in subfolders of: \
-                    " + root + "\n"))
+        # if split != 'test':
+        #    assert (len(self.image_path_generator) == len(self.masks))
+        # if len(self.image_label_path_generator) == 0:
+        #     raise (RuntimeError("Found 0 images in subfolders of: \
+        #             " + root + "\n"))
 
     def _mask_transform(self, mask):
         target = np.array(mask).astype('int32')
@@ -70,6 +71,8 @@ class ClothesSegmentation(BaseDataset):
         if self.transform:
             rgb_mean = np.array([0.485, 0.456, 0.406])
             rgb_std = np.array([0.229, 0.224, 0.225])
+            img = np.array(img).astype('int32')
+            mask = np.array(mask).astype('int32')
             img = (img / 255. - rgb_mean) / rgb_std
 
         return img, mask
@@ -79,8 +82,10 @@ class ClothesSegmentation(BaseDataset):
         generate image and mask at the same time
         """
         while True:
-            images = np.zeros(shape=[self.batch_size, self.crop_size, self.crop_size, 3])
-            labels = np.zeros(shape=[self.batch_size, self.crop_size, self.crop_size], dtype=np.float)
+            images = np.zeros(
+                shape=[self.batch_size, self.crop_size, self.crop_size, 3])
+            labels = np.zeros(
+                shape=[self.batch_size, self.crop_size, self.crop_size], dtype=np.float)
             for i in range(self.batch_size):
                 image_path, label_path = next(self.image_label_path_generator)
                 image, label = self.process_image_label(image_path, label_path)
@@ -94,8 +99,10 @@ def _get_clothes_pairs(folder, split='train'):
         with open(split_f, 'r') as lines:
             for line in tqdm(lines):
                 ll_str = re.split(' ', line)
-                imgpath = os.path.join(folder, split, 'imgs', ll_str[0].rstrip())
-                maskpath = os.path.join(folder, split, 'masks', ll_str[1].rstrip())
+                imgpath = os.path.join(
+                    folder, split, 'imgs', ll_str[0].rstrip())
+                maskpath = os.path.join(
+                    folder, split, 'masks', ll_str[1].rstrip())
                 if os.path.isfile(maskpath) and os.path.isfile(imgpath):
                     image_label_paths.append((imgpath, maskpath))
                 else:
