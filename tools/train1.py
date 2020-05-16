@@ -120,11 +120,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(lr=1e-4),
               loss='sparse_categorical_crossentropy',
               metrics=['accuracy'])
 # train your FCN8s model
-<<<<<<< HEAD
 callback = tf.keras.callbacks.ModelCheckpoint(
-=======
-callback=tf.keras.callbacks.ModelCheckpoint(
->>>>>>> e561102aca1fffe06eeef3a08e2ee0810e707925
     "FCN8s.h5", verbose=1, save_weights_only=True)
 model.fit_generator(TrainSet, steps_per_epoch=6000,
                     epochs=30, callbacks=[callback])

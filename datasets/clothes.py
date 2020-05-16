@@ -29,12 +29,14 @@ class ClothesSegmentation(BaseDataset):
         # assert os.path.exists(root), "Please setup the dataset using" + \
         #   "encoding/scripts/clothes.py"
         self.len_dataset = 0
-        self.image_label_path_generator = self._get_clothes_pairs(root, split)
-        # if split != 'test':
-        #    assert (len(self.image_path_generator) == len(self.masks))
-        # if len(self.image_label_path_generator) == 0:
-        #     raise (RuntimeError("Found 0 images in subfolders of: \
-        #             " + root + "\n"))
+        self.images, self.masks = self._get_clothes_pairs(root, split)
+        print('length of images, mask', len(self.images), len(self.masks))
+        # self.image_label_path_generator = self._get_clothes_pairs(root, split)
+        if split != 'test':
+           assert (len(self.images) == len(self.masks))
+        if len(self.images) == 0:
+            raise (RuntimeError("Found 0 images in subfolders of: \
+                    " + root + "\n"))
 
     def _mask_transform(self, mask):
         target = np.array(mask).astype('int32')
@@ -82,7 +84,9 @@ class ClothesSegmentation(BaseDataset):
     @classmethod
     def _get_clothes_pairs(cls, folder, split='train'):
         def get_path_pairs(folder, split_f):
-            image_label_paths = []
+            img_paths = []
+            mask_paths = []
+            # image_label_paths = []
             with open(split_f, 'r') as lines:
                 for line in tqdm(lines):
                     ll_str = re.split(' ', line)
@@ -91,14 +95,17 @@ class ClothesSegmentation(BaseDataset):
                     maskpath = os.path.join(
                         folder, split, 'masks', ll_str[1].rstrip())
                     if os.path.isfile(maskpath) and os.path.isfile(imgpath):
-                        image_label_paths.append((imgpath, maskpath))
+                        img_paths.append(imgpath)
+                        mask_paths.append(maskpath)
+                        # image_label_paths.append((imgpath, maskpath))
                     else:
                         print('cannot find the mask:', maskpath)
-            cls.LEN_DATASET = len(image_label_paths)
-            while True:
-                random.shuffle(image_label_paths)
-                for i in range(len(image_label_paths)):
-                    yield image_label_paths[i]
+            return img_paths, mask_paths
+            # cls.LEN_DATASET = len(image_label_paths)
+            # while True:
+            #     random.shuffle(image_label_paths)
+            #     for i in range(len(image_label_paths)):
+            #         yield image_label_paths[i]
 
         if split == 'train':
             split_f = os.path.join(folder, 'train.txt')
@@ -118,6 +125,9 @@ class ClothesSegmentation(BaseDataset):
         """
         generate image and mask at the same time
         """
+        image_label_paths = zip(self.images, self.masks)
+        print('zip paths:', image_label_paths)
+        image_label_path_generator = iter(image_label_paths)
         while True:
             images = np.zeros(
                 shape=[self.batch_size, self.crop_size, self.crop_size, 3])

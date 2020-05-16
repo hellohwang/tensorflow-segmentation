@@ -212,7 +212,7 @@ with strategy.scope():
 
 # Defining Training Loops
 with strategy.scope():
-    @tf.function
+    # @tf.function
     def distributed_train_step(dataset_inputs):
         per_replica_losses = strategy.experimental_run_v2(train_step,
                                                           args=(dataset_inputs,))
