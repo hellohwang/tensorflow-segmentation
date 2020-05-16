@@ -28,13 +28,8 @@ class ClothesSegmentation(BaseDataset):
         root = os.path.join(root, self.BASE_DIR)
         # assert os.path.exists(root), "Please setup the dataset using" + \
         #   "encoding/scripts/clothes.py"
-<<<<<<< HEAD
         self.len_dataset = 0
         self.image_label_path_generator = self._get_clothes_pairs(root, split)
-=======
-
-        self.image_label_path_generator = _get_clothes_pairs(root, split)
->>>>>>> e561102aca1fffe06eeef3a08e2ee0810e707925
         # if split != 'test':
         #    assert (len(self.image_path_generator) == len(self.masks))
         # if len(self.image_label_path_generator) == 0:
