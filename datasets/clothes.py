@@ -130,7 +130,6 @@ class ClothesSegmentation(BaseDataset):
             yield images, labels
 
 
-<<<<<<< HEAD
 # def _get_clothes_pairs(folder, split='train'):
 #     def get_path_pairs(folder, split_f):
 #         image_label_paths = []
@@ -149,85 +148,6 @@ class ClothesSegmentation(BaseDataset):
 #             random.shuffle(image_label_paths)
 #             for i in range(len(image_label_paths)):
 #                 yield image_label_paths[i]
-=======
-def _get_clothes_pairs(folder, split='train'):
-    def get_path_pairs(folder, split_f):
-        image_label_paths = []
-        with open(split_f, 'r') as lines:
-            for line in tqdm(lines):
-                ll_str = re.split(' ', line)
-                imgpath = os.path.join(
-                    folder, split, 'imgs', ll_str[0].rstrip())
-                maskpath = os.path.join(
-                    folder, split, 'masks', ll_str[1].rstrip())
-                if os.path.isfile(maskpath) and os.path.isfile(imgpath):
-                    image_label_paths.append((imgpath, maskpath))
-                else:
-                    print('cannot find the mask:', maskpath)
-        while True:
-            random.shuffle(image_label_paths)
-            for i in range(len(image_label_paths)):
-                yield image_label_paths[i]
-
-    if split == 'train':
-        split_f = os.path.join(folder, 'train.txt')
-        image_label_paths = get_path_pairs(folder, split_f)
-    elif split == 'val':
-        split_f = os.path.join(folder, 'val.txt')
-        image_label_paths = get_path_pairs(folder, split_f)
-    elif split == 'test':
-        split_f = os.path.join(folder, 'test.txt')
-        image_label_paths = get_path_pairs(folder, split_f)
-    else:
-        split_f = os.path.join(folder, 'trainval_fine.txt')
-        image_label_paths = get_path_pairs(folder, split_f)
-    return image_label_paths
-
-#
-# def create_image_label_path_generator(images_filepath, labels_filepath):
-#   image_paths = open(images_filepath).readlines()
-#   all_label_txts = os.listdir(labels_filepath)
-#   image_label_paths = []
-#   for label_txt in all_label_txts:
-#     label_name = label_txt[:-4]
-#     label_path = labels_filepath + "/" + label_txt
-#     for image_path in image_paths:
-#       image_path = image_path.rstrip()
-#       image_name = image_path.split("/")[-1][:-4]
-#       if label_name == image_name:
-#         image_label_paths.append((image_path, label_path))
-#   while True:
-#     random.shuffle(image_label_paths)
-#     for i in range(len(image_label_paths)):
-#       yield image_label_paths[i]
-
-
-# def process_image_label(image_path, label_path):
-#     # image = misc.imread(image_path)
-#     image = cv2.imread(image_path)
-#     image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_NEAREST)
-#     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-#     # data augmentation here
-#     # randomly shift gamma
-#     gamma = random.uniform(0.8, 1.2)
-#     image = image.copy() ** gamma
-#     image = np.clip(image, 0, 255)
-#     # randomly shift brightness
-#     brightness = random.uniform(0.5, 2.0)
-#     image = image.copy() * brightness
-#     image = np.clip(image, 0, 255)
-#     # image transformation here
-#     image = (image / 255. - rgb_mean) / rgb_std
-#
-#     label = open(label_path).readlines()
-#     label = [np.array(line.rstrip().split(" ")) for line in label]
-#     label = np.array(label, dtype=np.int)
-#     label = cv2.resize(label, (224, 224), interpolation=cv2.INTER_NEAREST)
-#     label = label.astype(np.int)
-#
-#     return image, label
-#
->>>>>>> e561102aca1fffe06eeef3a08e2ee0810e707925
 #
 #     if split == 'train':
 #         split_f = os.path.join(folder, 'train.txt')
