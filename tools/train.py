@@ -1,105 +1,92 @@
-import tensorflow as tf
-from tensorflow.keras import datasets, layers, models
+#! /usr/bin/env python
+# coding=utf-8
+#================================================================
+#   Copyright (C) 2019 * Ltd. All rights reserved.
+#
+#   Editor      : VIM
+#   File name   : train.py
+#   Author      : YunYang1994
+#   Created date: 2019-09-19 15:25:10
+#   Description :
+#
+#================================================================
+
+import os
+import cv2
+import numpy as np
+from Unet import Unet
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-train_dir = "../datasets/data/clothes_dataset/train"
-val_dir = "../datasets/data/clothes_dataset/val"
-BATCH_SIZE = 8
+def DataGenerator(file_path, batch_size):
+    """
+    generate image and mask at the same time
+    use the same seed for image_datagen and mask_datagen
+    to ensure the transformation for image and mask is the same
+    """
+    aug_dict = dict(rotation_range=0.2,
+                        width_shift_range=0.05,
+                        height_shift_range=0.05,
+                        shear_range=0.05,
+                        zoom_range=0.05,
+                        horizontal_flip=True,
+                        fill_mode='nearest')
+    aug_dict = dict(horizontal_flip=True,
+                        fill_mode='nearest')
 
-NUM_GPUS = 2
-BS_PER_GPU = 128
-NUM_EPOCHS = 60
+    image_datagen = ImageDataGenerator(**aug_dict)
+    mask_datagen = ImageDataGenerator(**aug_dict)
+    image_generator = image_datagen.flow_from_directory(
+        file_path,
+        classes=["images"],
+        color_mode = "grayscale",
+        target_size = (256, 256),
+        class_mode = None,
+        batch_size = batch_size, seed=1)
 
-HEIGHT = 32
-WIDTH = 32
-NUM_CHANNELS = 3
-NUM_CLASSES = 10
-NUM_TRAIN_SAMPLES = 50000
+    mask_generator = mask_datagen.flow_from_directory(
+        file_path,
+        classes=["labels"],
+        color_mode = "grayscale",
+        target_size = (256, 256),
+        class_mode = None,
+        batch_size = batch_size, seed=1)
 
-BASE_LEARNING_RATE = 0.1
-LR_SCHEDULE = [(0.1, 30), (0.01, 45)]
+    train_generator = zip(image_generator, mask_generator)
+    for (img,mask) in train_generator:
+        img = img / 255.
+        mask = mask / 255.
+        mask[mask > 0.5] = 1
+        mask[mask <= 0.5] = 0
+        yield (img,mask)
 
-# def augmentation(x, y):
-#   x = tf.image.resize_with_crop_or_pad(
-#     x, HEIGHT + 8, WIDTH + 8)
-#   x = tf.image.random_crop(x, [HEIGHT, WIDTH, 3])
-#   x = tf.image.random_flip_left_right(x)
-#   return x, y
+model = Unet(1, image_size=256)
+trainset = DataGenerator("membrane/train", batch_size=2)
+model.fit_generator(trainset,steps_per_epoch=5000,epochs=5)
+model.save_weights("model.h5")
 
-def load_image(img_path, size=(32, 32)):
-  label = tf.constant(1, tf.int8) if tf.strings.regex_full_match(img_path, ".*/masks/.*") \
-    else tf.constant(0, tf.int8)
-  img = tf.io.read_file(img_path)
-  img = tf.image.decode_jpeg(img)  # 注意此处为jpeg格式
-  img = tf.image.resize(img, size) / 255.0
-  return (img, label)
+testSet = DataGenerator("membrane/test", batch_size=1)
+alpha   = 0.3
+model.load_weights("model.h5")
+if not os.path.exists("./results"): os.mkdir("./results")
 
-
-# 使用并行化预处理num_parallel_calls 和预存数据prefetch来提升性能
-ds_train = tf.data.Dataset.list_files(train_dir) \
-  .map(load_image, num_parallel_calls=tf.data.experimental.AUTOTUNE) \
-  .shuffle(buffer_size=1000).batch(BATCH_SIZE) \
-  .prefetch(tf.data.experimental.AUTOTUNE)
-
-ds_valid = tf.data.Dataset.list_files(train_dir) \
-  .map(load_image, num_parallel_calls=tf.data.experimental.AUTOTUNE) \
-  .shuffle(buffer_size=1000).batch(BATCH_SIZE) \
-  .prefetch(tf.data.experimental.AUTOTUNE)
-
-optimizer = optimizers.Adam()
-loss_func = losses.MeanSquaredError()
-
-train_loss = tf.keras.metrics.Mean(name='train_loss')
-train_metric = tf.keras.metrics.MeanAbsoluteError(name='train_mae')
-
-valid_loss = tf.keras.metrics.Mean(name='valid_loss')
-valid_metric = tf.keras.metrics.MeanAbsoluteError(name='valid_mae')
-
-
-@tf.function
-def train_step(model, features, labels):
-  with tf.GradientTape() as tape:
-    predictions = model(features)
-    loss = loss_func(labels, predictions)
-  gradients = tape.gradient(loss, model.trainable_variables)
-  optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-
-  train_loss.update_state(loss)
-  train_metric.update_state(labels, predictions)
-
-
-@tf.function
-def valid_step(model, features, labels):
-  predictions = model(features)
-  batch_loss = loss_func(labels, predictions)
-  valid_loss.update_state(batch_loss)
-  valid_metric.update_state(labels, predictions)
-
-
-@tf.function
-def train_model(model, ds_train, ds_valid, epochs):
-  for epoch in tf.range(1, epochs + 1):
-    for features, labels in ds_train:
-      train_step(model, features, labels)
-
-    for features, labels in ds_valid:
-      valid_step(model, features, labels)
-
-    logs = 'Epoch={},Loss:{},MAE:{},Valid Loss:{},Valid MAE:{}'
-
-    if epoch % 100 == 0:
-      # printbar()
-      tf.print(tf.strings.format(logs,
-                                 (epoch, train_loss.result(), train_metric.result(), valid_loss.result(),
-                                  valid_metric.result())))
-      tf.print("w=", model.layers[0].kernel)
-      tf.print("b=", model.layers[0].bias)
-      tf.print("")
-
-    train_loss.reset_states()
-    valid_loss.reset_states()
-    train_metric.reset_states()
-    valid_metric.reset_states()
+for idx, (img, mask) in enumerate(testSet):
+    oring_img = img[0]
+    pred_mask = model.predict(img)[0]
+    pred_mask[pred_mask > 0.5] = 1
+    pred_mask[pred_mask <= 0.5] = 0
+    img = cv2.cvtColor(img[0], cv2.COLOR_GRAY2RGB)
+    H, W, C = img.shape
+    for i in range(H):
+        for j in range(W):
+            if pred_mask[i][j][0] <= 0.5:
+                img[i][j] = (1-alpha)*img[i][j]*255 + alpha*np.array([0, 0, 255])
+            else:
+                img[i][j] = img[i][j]*255
+    image_accuracy = np.mean(mask == pred_mask)
+    image_path = "./results/pred_"+str(idx)+".png"
+    print("=> accuracy: %.4f, saving %s" %(image_accuracy, image_path))
+    cv2.imwrite(image_path, img)
+    cv2.imwrite("./results/origin_%d.png" %idx, oring_img*255)
+    if idx == 29: break
 
 
-train_model(model, ds_train, ds_valid, 400)

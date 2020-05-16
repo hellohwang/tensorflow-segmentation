@@ -10,32 +10,25 @@ from PIL import Image, ImageOps, ImageFilter
 import tensorflow as tf
 
 
-__all__ = ['BaseDataset', 'test_batchify_fn']
+__all__ = ['BaseDataset']
 
 class BaseDataset(object):
-    def __init__(self, root, split, mode=None, transform=None, 
-                 target_transform=None, base_size=520, crop_size=480):
+    def __init__(self, root, split, mode=None, transform=None, batch_size=8,
+                base_size=520, crop_size=480):
         self.root = root
         self.transform = transform
-        self.target_transform = target_transform
         self.split = split
         self.mode = mode if mode is not None else split
         self.base_size = base_size
         self.crop_size = crop_size
+        self.batch_size = batch_size
         if self.mode == 'train':
             print('BaseDataset: base_size {}, crop_size {}'. \
                 format(base_size, crop_size))
 
-    def __getitem__(self, index):
-        raise NotImplemented
-
     @property
     def num_class(self):
         return self.NUM_CLASS
-
-    @property
-    def pred_offset(self):
-        raise NotImplemented
 
     def make_pred(self, x):
         return x + self.pred_offset
@@ -96,13 +89,3 @@ class BaseDataset(object):
 
     def _mask_transform(self, mask):
         return tf.from_numpy(np.array(mask)).long()
-
-
-def test_batchify_fn(data):
-    error_msg = "batch must contain tensors, tuples or lists; found {}"
-    if isinstance(data[0], (str, tf.Tensor)):
-        return list(data)
-    elif isinstance(data[0], (tuple, list)):
-        data = zip(*data)
-        return [test_batchify_fn(i) for i in data]
-    # raise TypeError((error_msg.format(type(batch[0]))))

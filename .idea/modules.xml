@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/tf2-segmentation.iml" filepath="$PROJECT_DIR$/.idea/tf2-segmentation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/tensorflow-segmentation.iml" filepath="$PROJECT_DIR$/.idea/tensorflow-segmentation.iml" />
     </modules>
   </component>
 </project>
