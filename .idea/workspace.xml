@@ -2,16 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e5ac3835-69ac-4f87-9751-a598a43889b7" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/tensorflow-segmentation.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/tensorflow-segmentation.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/datasets/clothes.py" beforeDir="false" afterPath="$PROJECT_DIR$/datasets/clothes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/backbone/mobilenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/backbone/mobilenet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/backbone/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/backbone/resnet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/train.sh" beforeDir="false" afterPath="$PROJECT_DIR$/tools/train.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/train1.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/train_gpu.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/train_gpus.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/train_gpus.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/backbone/mobilenet.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/backbone/resnet.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/backbone/resnet_v2.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/backbone/resnext.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/seg/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/seg/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/seg/deeplab.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/seg/fcn8s.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/seg/fcn8s.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -110,7 +108,7 @@
       <option name="presentableId" value="Default" />
       <updated>1589599742164</updated>
       <workItem from="1589599749361" duration="11276000" />
-      <workItem from="1589635005757" duration="4746000" />
+      <workItem from="1589635005757" duration="5740000" />
     </task>
     <servers />
   </component>
