@@ -20,6 +20,7 @@ from tensorflow.keras import applications
 
 import sys
 import os
+import math
 
 this_dir = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(this_dir, '..'))
@@ -137,6 +138,7 @@ class Options():
         print(args)
         return args
 
+
 # ------------------------------------ Prepare Dataset ------------------------------------#
 args = Options().parse()
 data_kwargs = {'base_size': args.base_size, 'crop_size': args.crop_size}
@@ -163,7 +165,8 @@ strategy = tf.distribute.MirroredStrategy()
 # Defining Model
 with strategy.scope():
     backbone = applications.mobilenet_v2.MobileNetV2(include_top=False,
-                                                     weights='imagenet', input_shape=(args.crop_size, args.crop_size, 3))
+                                                     weights='imagenet',
+                                                     input_shape=(args.crop_size, args.crop_size, 3))
     x = tf.keras.layers.Input(shape=(args.crop_size, args.crop_size, 3))
     y = backbone(x)
     y = tf.keras.layers.AveragePooling2D()(y)
@@ -174,10 +177,9 @@ with strategy.scope():
         featureExtractor,
         tf.keras.layers.Dense(12, activation='softmax')
     ])
-    
-    model.build(input_shape=[1, args.crop_size, args.crop_size, 3])
+
+    model.build(input_shape=[args.batch_size, args.crop_size, args.crop_size, 3])
     # model = FCN8s(n_class=trainset.NUM_CLASS)
-    print(model)
     optimizer = tf.keras.optimizers.Adam(0.001)
 
 # Defining Loss and Metrics
@@ -186,9 +188,11 @@ with strategy.scope():
         reduction=tf.keras.losses.Reduction.NONE
     )
 
+
     def compute_loss(labels, predictions):
         per_example_loss = loss_object(labels, predictions)
         return tf.nn.compute_average_loss(per_example_loss, global_batch_size=args.batch_size)
+
 
     train_accuracy = tf.keras.metrics.CategoricalAccuracy(
         name='train_accuracy'
@@ -212,7 +216,7 @@ with strategy.scope():
 
 # Defining Training Loops
 with strategy.scope():
-    # @tf.function
+    @tf.function
     def distributed_train_step(dataset_inputs):
         per_replica_losses = strategy.experimental_run_v2(train_step,
                                                           args=(dataset_inputs,))
@@ -223,9 +227,14 @@ with strategy.scope():
     for epoch in range(1, args.epochs + 1):
         if epoch == 30: optimizer.lr.assign(args.lr)
 
-        batchs_per_epoch = trainset.LEN_DATASET
+        batchs_per_epoch = math.ceil(trainset.LEN_TRAINSET / args.batch_size)
+        print("trainset.len_dataset", batchs_per_epoch)
         train_dataset = trainset_datagen
         test_dataset = valset_datagen
+
+        # tbar = tqdm(train_dataset)
+        # for i, (image, target) in enumerate(tbar):
+
 
         with tqdm(total=batchs_per_epoch,
                   desc="Epoch %2d/%2d" % (epoch, args.epochs)) as pbar:
