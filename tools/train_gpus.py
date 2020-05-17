@@ -184,10 +184,9 @@ with strategy.scope():
 
 # Defining Loss and Metrics
 with strategy.scope():
-    loss_object = tf.keras.losses.CategoricalCrossentropy(
+    loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
         reduction=tf.keras.losses.Reduction.NONE
     )
-
 
     def compute_loss(labels, predictions):
         per_example_loss = loss_object(labels, predictions)
@@ -202,6 +201,7 @@ with strategy.scope():
 with strategy.scope():
     def train_step(inputs):
         images, labels = inputs
+        # tf.print(tf.shape(images), tf.shape(labels))
 
         with tf.GradientTape() as tape:
             predictions = model(images, training=True)
@@ -228,7 +228,7 @@ with strategy.scope():
         if epoch == 30: optimizer.lr.assign(args.lr)
 
         batchs_per_epoch = math.ceil(trainset.LEN_TRAINSET / args.batch_size)
-        print("trainset.len_dataset", batchs_per_epoch)
+        print("batchs_per_epoch:", batchs_per_epoch)
         train_dataset = trainset_datagen
         test_dataset = valset_datagen
 

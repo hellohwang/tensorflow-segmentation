@@ -1,5 +1,6 @@
 import sys
 import os
+
 this_dir = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(this_dir, '..'))
 
@@ -23,7 +24,7 @@ class Options():
                             help='model name (default: encnet)')
         parser.add_argument('--backbone', type=str, default='resnet50',
                             help='backbone name (default: resnet50)')
-        parser.add_argument('--dataset', type=str, default='clothes',
+        parser.add_argument('--dataset', type=str, default='ade20k',
                             help='dataset name (default: pascal12)')
         parser.add_argument('--base-size', type=int, default=520,
                             help='base image size')
@@ -85,7 +86,7 @@ class Options():
 
     def parse(self):
         args = self.parser.parse_args()
-        args.cuda = not args.no_cuda and tf.test.is_gpu_available()
+        args.cuda = not args.no_cuda and tf.cuda.is_available()
         # default settings for epochs, batch_size and lr
         if args.epochs is None:
             epoches = {
@@ -113,24 +114,25 @@ class Options():
         return args
 
 
-# TrainSet = DataGenerator("./data/train_image.txt", "./data/train_labels", 2)
-# data_kwargs = {'base_size': args.base_size,'crop_size': args.crop_size}
 args = Options().parse()
+
+# dataset generator
 data_kwargs = {'base_size': args.base_size, 'crop_size': args.crop_size}
 trainset = get_dataset(args.dataset, split=args.train_split, mode='train', **data_kwargs)
 trainset_datagen = trainset._DataGenerator()
 valset = get_dataset(args.dataset, split=args.train_split, mode='val', **data_kwargs)
 valset_datagen = valset._DataGenerator()
 
+# model definition
 
-# data_kwargs={'base_size': 512, 'crop_size': 384}
-# TrainSet=ClothesSegmentation(mode='train', **data_kwargs)._DataGenerator()
-# model=FCN8s(n_class=21)
-# model.compile(optimizer=tf.keras.optimizers.Adam(lr=1e-4),
-#               loss='sparse_categorical_crossentropy',
-#               metrics=['accuracy'])
-# # train your FCN8s model
-# callback = tf.keras.callbacks.ModelCheckpoint(
-#     "FCN8s.h5", verbose=1, save_weights_only=True)
-# model.fit_generator(TrainSet, steps_per_epoch=6000,
-#                     epochs=30, callbacks=[callback])
+
+
+model = FCN8s(n_class=21)
+model.compile(optimizer=tf.keras.optimizers.Adam(lr=1e-4),
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+# train your FCN8s model
+callback = tf.keras.callbacks.ModelCheckpoint(
+    "FCN8s.h5", verbose=1, save_weights_only=True)
+model.fit_generator(TrainSet, steps_per_epoch=6000,
+                    epochs=30, callbacks=[callback])
