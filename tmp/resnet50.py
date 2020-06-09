@@ -19,7 +19,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from .keras_imp import mobilenet_v2
+from resnet import resnet50
 
 from tensorflow.python.keras.applications import keras_modules_injection
 from tensorflow.python.util.tf_export import keras_export
@@ -28,5 +28,17 @@ from tensorflow.python.util.tf_export import keras_export
 @keras_export('keras.applications.resnet50.ResNet50',
               'keras.applications.ResNet50')
 @keras_modules_injection
-def MobileNetV2(*args, **kwargs):
-  return mobilenet_v2.MobileNetV2(*args, **kwargs)
+def ResNet50(*args, **kwargs):
+  return resnet50.ResNet50(*args, **kwargs)
+
+
+@keras_export('keras.applications.resnet50.decode_predictions')
+@keras_modules_injection
+def decode_predictions(*args, **kwargs):
+  return resnet50.decode_predictions(*args, **kwargs)
+
+
+@keras_export('keras.applications.resnet50.preprocess_input')
+@keras_modules_injection
+def preprocess_input(*args, **kwargs):
+  return resnet50.preprocess_input(*args, **kwargs)

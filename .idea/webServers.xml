@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="e997ace6-5e12-4b00-a26c-23b042dcd250" name="tensorflow-segmentation" url="http://159.226.21.115">
+        <fileTransfer host="159.226.21.115" port="5005" rootFolder="/data3/hwang/proj/tensorflow-segmentation" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="5005" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

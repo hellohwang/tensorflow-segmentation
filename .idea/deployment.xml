@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="tensorflow-segmentation" filePermissions="420" folderPermissions="493" showEqualInSync="true" showAutoUploadSettingsWarning="false">
+    <serverData>
+      <paths name="tensorflow-segmentation">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath path="/init_models" />
+            <excludedPath path="/datasets/data" />
+            <excludedPath path="/tools/models" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>

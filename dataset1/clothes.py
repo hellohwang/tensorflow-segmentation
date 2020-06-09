@@ -56,7 +56,7 @@ class ClothesSegmentation(BaseDataset):
                 rgb_std = np.array([0.229, 0.224, 0.225])
                 img = np.array(img).astype('int32')
                 img = (img / 255. - rgb_mean) / rgb_std
-            return img, os.path.basename(self.images[index])
+            return img, os.path.basename(image_path)
 
         mask = Image.open(mask_path)
 

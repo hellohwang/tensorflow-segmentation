@@ -65,6 +65,8 @@ class FCN8s(tf.keras.Model):
             n_class, 4, strides=2, padding='valid', use_bias=False)
 
     def call(self, x, training=False):
+
+
         h = x
         h = self.conv1_1(tf.keras.layers.ZeroPadding2D(padding=(100, 100))(h))
         h = self.conv1_2(h)
